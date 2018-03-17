@@ -147,34 +147,42 @@ while True:
 
         # todo
         available_bets = i.find_all('div', class_='game')
-        odds = {}
+        odds_dict = {}
         for game in available_bets:
             for desc in game.descendants:
-                if desc['class'] == "selection-name":
-                    odd_name = desc.string
-                    odd = desc.next_sibling.string
-                    odds[odd_name] = odd
-
+                try:
+                    if desc.get('class')[0] == 'selection-name':
+                        odd_name = desc.string
+                        odd = desc.next_sibling.string.strip()
+                        odds_dict[odd_name] = odd
+                except:
+                    pass
+        print(odds_dict)
         moment = game_time
+        # data = {'res_home': home_result,
+        #         'res_away': away_result,
+        #         'odd_1': odds[0],
+        #         'odd_x': odds[1],
+        #         'odd_2': odds[2],
+        #
+        #         'odd_tg_less': odds[5],
+        #         'odd_tg_more': odds[6],
+        #         'odd_tg': odds[7],
+        #
+        #         'odd_hg_less': odds[8],
+        #         'odd_hg_more': odds[9],
+        #         'odd_hg': odds[9],
+        #
+        #         'odd_ag_less': odds[10],
+        #         'odd_ag_more': odds[11],
+        #         'odd_ag': odds[12]}
+
         data = {'res_home': home_result,
-                'res_away': away_result,
-                'odd_1': odds[0],
-                'odd_x': odds[1],
-                'odd_2': odds[2],
+                'res_away': away_result
+                }
+        data.update(odds_dict)
 
-                'odd_tg_less': odds[5],
-                'odd_tg_more': odds[6],
-                'odd_tg': odds[7],
-
-                'odd_hg_less': odds[8],
-                'odd_hg_more': odds[9],
-                'odd_hg': odds[9],
-
-                'odd_ag_less': odds[10],
-                'odd_ag_more': odds[11],
-                'odd_ag': odds[12]}
-
-
+        print(data)
         if code not in games_pool.keys():
 
             game_data = {'code': code,
