@@ -1,0 +1,86 @@
+{
+  "pool" : "Meridian",
+  "url" : "https://meridianbet.rs/sr/kladjenje/uzivo/fudbal",
+  "odds" : {
+            "odd_1" :
+              {
+                "game_type": "Konačan Ishod",
+                "odd_name": "1"
+              },
+              "odd_x" :
+              {
+                "game_type": "Konačan Ishod",
+                "odd_name": "X"
+              },
+              "odd_2" :
+              {
+                "game_type": "Konačan Ishod",
+                "odd_name": "2"
+              },
+
+              "odd_tg_less" :
+              {
+                "game_type": "Uk. Golova",
+                "odd_name": "Manje"
+              },
+              "odd_tg_more" :
+              {
+                "game_type": "Uk. Golova",
+                "odd_name": "Više"
+              },
+              "odd_tg" :
+              {
+                "game_type": "Uk. Golova",
+                "odd_name": "OU"
+              },
+
+              "odd_hg_less" :
+              {
+                "game_type": "Domaćin Golova",
+                "odd_name": "Manje"
+              },
+              "odd_hg_more" :
+              {
+                "game_type": "Domaćin Golova",
+                "odd_name": "Više"
+              },
+              "odd_hg" :
+              {
+                "game_type": "Domaćin Golova",
+                "odd_name": "OU"
+              },
+
+              "odd_ag_less" :
+              {
+                "game_type": "Gost golova",
+                "odd_name": "Manje"
+              },
+              "odd_ag_more" :
+              {
+                "game_type": "Gost golova",
+                "odd_name": "Više"
+              },
+              "odd_ag" :
+              {
+                "game_type": "Gost golova",
+                "odd_name": "OU"
+              },
+
+              "ng_1" :
+              {
+                "game_type": "Daje Prvi Gol",
+                "odd_name": "1"
+              },
+              "ng_x" :
+              {
+                "game_type": "Daje Prvi Gol",
+                "odd_name": "Nema Gola"
+              },
+              "ng_2" :
+              {
+                "game_type": "Daje Prvi Gol",
+                "odd_name": "2"
+              }
+
+          }
+}

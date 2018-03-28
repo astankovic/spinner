@@ -1,14 +1,10 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
+import threading
 import time
 from time import gmtime, strftime
 import json
-import csv
 import os.path as path
-
-# from tabulate import tabulate
-
-# config
 
 # time to check for updates in seconds
 refresh_period = 30
@@ -16,8 +12,10 @@ refresh_period = 30
 # Path to dir of logs
 path_dir = path.abspath(path.curdir) + '\\logs\\'
 
+# configuration file
+config_file = path.abspath(path.curdir) + '\\config.json'
 
-class GameSummary:
+'''class GameSummary:
     # storing result and odds during the game
 
     def __init__(self, ID, home, away):
@@ -62,22 +60,39 @@ class GameSummary:
         pass
         with open(location) as infile:
             self = json.load(infile)
+'''
 
 
 def write_to_json(match, log_path):
     with open(log_path
               + strftime("%Y_%m_%d", gmtime())
               + '_' + match['home']
-              + '_' + match['away'] + '.json', 'w') as outfile:
-        json.dump(match, outfile, sort_keys=True, indent=4)
+              + '_' + match['away'] + '.json', encoding='utf-8', mode='w') as outfile:
+        json.dump(match, outfile, sort_keys=False, indent=4)
 
 
-url = 'https://meridianbet.rs/sr/kladjenje/uzivo/fudbal'
+def read_config(file_path):
+    with open(file_path, encoding="utf-8") as infile:
+        config_dict = json.load(infile)
+        return config_dict
+
+
+def translate_odds(mapping_dict, gathered_odds):
+    translated_odd = {}
+    for i in mapping_dict.keys():
+        try:
+            translated_odd[i] = gathered_odds[mapping_dict[i]['game_type']][mapping_dict[i]['odd_name']]
+        except:
+            translated_odd[i] = 1
+    return translated_odd
+
+
+config = read_config(config_file)
+mapping = config['odds']
+
+url = config['url']
 browser = webdriver.Chrome('C:/chromeDr/chromedriver')
 browser.get(url)
-
-# todo
-# browser.quit()
 
 # wait for js to load
 print('Waiting for JS to load: ')
@@ -101,11 +116,14 @@ while True:
         delete = []
         for i in games_pool.keys():
             if i not in live_matches_ids:
-                write_to_json(games_pool[i], path_dir)
                 print('Game ' + i
                       + ':' + games_pool[i]['home']
                       + ' - ' + games_pool[i]['away']
                       + ' has just finished.')
+                try:
+                    write_to_json(games_pool[i], path_dir)
+                except Exception as ex:
+                    print('Error writing to file: ' + i + ": " + ex)
                 delete.append(i)
         if delete:
             for i in delete:
@@ -122,7 +140,6 @@ while True:
             game_time = None
         home = i.find_all(class_='home')[0].string.strip()
         away = i.find_all(class_='away')[0].string.strip()
-
         try:
             home_result = i.find_all(class_='home')[1].string.strip()
         except:
@@ -132,59 +149,32 @@ while True:
         except:
             away_result = None
 
-        odds = []
-        selection_odds = i.find_all('div', class_='selection-odd')
-        for odd in selection_odds:
-            odds.append(odd.string.strip())
-
-        # game.append(code)
-        # game.append(game_time)
-        # game.append(home)
-        # game.append(away)
-        # game.append(home_result + '-' + away_result)
-        # game.extend(odds)
-        # games.append(game)
-
-        # todo
         available_bets = i.find_all('div', class_='game')
         odds_dict = {}
-        for game in available_bets:
-            for desc in game.descendants:
-                try:
-                    if desc.get('class')[0] == 'selection-name':
-                        odd_name = desc.string
-                        odd = desc.next_sibling.string.strip()
-                        odds_dict[odd_name] = odd
-                except:
-                    pass
-        print(odds_dict)
-        moment = game_time
-        # data = {'res_home': home_result,
-        #         'res_away': away_result,
-        #         'odd_1': odds[0],
-        #         'odd_x': odds[1],
-        #         'odd_2': odds[2],
-        #
-        #         'odd_tg_less': odds[5],
-        #         'odd_tg_more': odds[6],
-        #         'odd_tg': odds[7],
-        #
-        #         'odd_hg_less': odds[8],
-        #         'odd_hg_more': odds[9],
-        #         'odd_hg': odds[9],
-        #
-        #         'odd_ag_less': odds[10],
-        #         'odd_ag_more': odds[11],
-        #         'odd_ag': odds[12]}
+        if available_bets:
+            for game in available_bets:
+                game_type_div = game.div
+                if game_type_div.string:
+                    game_type = game_type_div.string.strip()
+                    new_dict = {}
+                    for desc in game.descendants:
+                        try:
+                            if desc.get('class')[0] == 'selection-name':
+                                odd_name = desc.string
+                                odd = desc.next_sibling.next_sibling.string.strip()
+                                new_dict[odd_name] = odd
+                        except:
+                            pass
+                    odds_dict[game_type] = new_dict
 
+        translated_odds = translate_odds(mapping, odds_dict)
+        moment = game_time
         data = {'res_home': home_result,
                 'res_away': away_result
                 }
-        data.update(odds_dict)
+        data.update(translated_odds)
 
-        print(data)
         if code not in games_pool.keys():
-
             game_data = {'code': code,
                          'league': league,
                          'home': home,
@@ -192,20 +182,7 @@ while True:
                          'history': {moment: data}
                          }
             games_pool[code] = game_data
-            # game_data = GameSummary(code, home, away)
-            # game_data.collect_data(moment, data)
-            # games_pool[game_data.ID] = game_data
         else:
             games_pool[code]['history'][moment] = data
-            # games_pool[game_data.ID].collect_data(moment, data)
+    time.sleep(refresh_period)
 
-        # print(strftime("%Y-%m-%d %H:%M:%S", gmtime()))
-        # print(tabulate(games,
-        #                headers=["Code", "Time", "Home", "Away", "Result", "1", "x", "2", "", "", "UG<", "UG>", "UG",
-        #                         "D<", "D>", "DG", "G<", "G>", "GG", "", "", ""]))
-
-    # if input('stop?') != '':
-    #     break
-    for i in range(refresh_period):
-        time.sleep(1)
-        # print(i * 'x' + (refresh_period - i) * '_')
