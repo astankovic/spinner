@@ -115,6 +115,7 @@ for i in range(6, 1, -1):
     time.sleep(1)
     print(i)
 
+already_started = []
 games_pool = {}
 
 while True:
