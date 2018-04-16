@@ -63,14 +63,15 @@ config_file = path.abspath(path.curdir) + '\\config.json'
 '''
 
 class logger():
-    log_path = '//log//log.txt'
+    log_path = path.abspath(path.curdir) + '//logs//log.txt'
 
     def __init__(self):
-        self.file = open(self.log_path, 'a')
+        self.file = open(self.log_path, encoding='utf-8', mode='a')
         self.file.write(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + ": Logger started.\n")
+        self.file.flush()
 
     def append(self, message):
-        self.file.write(strftime("%Y-%m-%d %H:%M:%S", gmtime())+ ': ' + message + '\n')
+        self.file.write(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + ': ' + message + '\n')
         self.file.flush()
 
     def close(self):
@@ -141,7 +142,7 @@ while True:
                       + ' - ' + games_pool[i]['away']
                       + ' has just finished.')
                 log.append('live matches: ' + str(live_matches_ids))
-                log.append('games pool: ' + str(games_pool))
+                log.append('games pool: ' + str(games_pool.keys()))
                 try:
                     write_to_json(games_pool[i], path_dir)
                 except Exception as ex:
