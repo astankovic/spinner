@@ -13,9 +13,16 @@ def plot_game(game, game_name, path, just_show):
     game = pd.read_csv(game, index_col='min', na_values='-')
     fig = plt.figure(figsize=(24, 13.5), dpi=80)
     
-    ax3 = fig.add_subplot(221)
-    ax2 = fig.add_subplot(222)
-    ax1 = fig.add_subplot(212)
+    ax3 = fig.add_subplot(321)
+    ax2 = fig.add_subplot(322)
+
+    ax1_1_hist = fig.add_subplot(334)
+    ax1_2_hist = fig.add_subplot(335)
+    ax1_x_hist = fig.add_subplot(336)
+    
+    ax1 = fig.add_subplot(313)
+    
+    
     
     ax1.plot(game[['odd_1']], color='r', label='odd_1')
     ax1.plot(game[['odd_x']], color='g', label='odd_x')
@@ -37,6 +44,10 @@ def plot_game(game, game_name, path, just_show):
     ax3.plot(game[['odd_ag_more']], color='b', label='odd_ag_more')
     ax3.plot(game[['odd_ag']], color='g', label='odd_ag')
     ax3.legend(loc="upper left")
+
+    ax1_1_hist.hist(game[['odd_1']].T, color='r')
+    ax1_2_hist.hist(game[['odd_2']].T, color='b')
+    ax1_x_hist.hist(game[['odd_x']].T, color='g')
     
     plt.suptitle(game_name, fontsize=16)
 
@@ -56,7 +67,7 @@ def plot_one_game():
     # print all available games for plot
     for i in range(0, len(logs)):
         print(str(i+1) + ": " + logs[i])
-    game_no = int(input('izaberi broj utakmice')) - 1
+    game_no = int(input('Pick the game from a list')) - 1
     game_file = path_to_logs + logs[game_no]
     plot_game(game_file, logs[game_no], path_to_figures, True)
 
@@ -80,6 +91,8 @@ existing_figures = []
 for file in os.listdir(path_to_logs):
     if file.endswith(".csv"):
         logs.append(file)
+
+#get all existing figures
 for file in os.listdir(path_to_figures):
     if file.endswith(".png"):
         existing_figures.append(file.split('.')[0])
