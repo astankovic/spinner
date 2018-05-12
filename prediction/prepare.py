@@ -1,40 +1,34 @@
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+from pandas import DataFrame
+from pandas import concat
 
-
-# create a differenced series
-def difference(dataset, interval=1):
-    diff = list()
-    for i in range(interval, len(dataset)):
-        value = dataset[i] - dataset[i - interval]
-        diff.append(value)
-    return pd.Series(diff)
-        
+def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
+    n_vars = 1 if type(data) is list else data.shape[1]
+    df = DataFrame(data)
+    cols, names = list(), list()
+    # input sequence (t-n, ... t-1)
+    for i in range(n_in, 0, -1):
+        cols.append(df.shift(i))
+        names += [(df.columns[j] + '(t-%d)' % i) for j in range(n_vars)]
+    # forecast sequence (t, t+1, ... t+n)
+    for i in range(0, n_out):
+        cols.append(df.shift(-i))
+        if i == 0:
+            names += [(df.columns[j] + '(t)') for j in range(n_vars)]
+        else:
+            names += [(df.columns[j] + '(t+%d)' % i) for j in range(n_vars)]
+    # put it all together
+    agg = concat(cols, axis=1)
+    agg.columns = names
+    # drop rows with NaN values
+    if dropnan:
+        agg.dropna(inplace=True)
+    return agg
+                   
 df = pd.read_csv('2018_04_26_Zaqatala_Shuvalan.csv')
+df.set_index('min', inplace=True)
+df = df[['odd_1','odd_2','odd_x', 'res_away', 'res_home']]
 
-df_increments = pd.DataFrame()
+df_supervised = series_to_supervised(df,5,3)
+print(df_supervised.head())
 
-for column in df.columns:
-    df_increments[column + '_increment'] = difference(df[column])
-
-fig = plt.figure()
-
-p1 = fig.add_subplot(211)
-p12 = fig.add_subplot(212)
-##p2 = fig.add_subplot(312)
-##p3 = fig.add_subplot(313)
-
-p1.plot(df['odd_1'])
-p12.plot(df_increments['odd_1_increment'][df_increments['odd_1_increment']>0], c='r')
-p12.plot(df_increments['odd_1_increment'][df_increments['odd_1_increment']<=0], c='b')
-
-##p2.plot(df['odd_x'])
-##p3.plot(df['odd_2'])
-
-p1.legend()
-p12.legend()
-##p2.legend()
-##p3.legend()
-
-plt.show()

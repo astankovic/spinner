@@ -16,7 +16,7 @@ def get_train_test(timeseries, sequence_length=10,
     for index in range(len(timeseries) - sequence_length):
         result.append(timeseries[index: index + sequence_length])
 
-    #mormalize data as a variation of 0th index
+    #normalize data as a variation of 0th index
     if normalize:
         normalised_data = []
         for window in result:
