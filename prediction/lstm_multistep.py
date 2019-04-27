@@ -41,14 +41,16 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
 # date-time parsing function for loading the dataset
 def parser(x):
     return datetime.strptime('190'+x, '%Y-%m')
- 
+
+
 # create a differenced series
 def difference(dataset, interval=1):
     diff = list()
     for i in range(interval, len(dataset)):
-	value = dataset[i] - dataset[i - interval]
-	diff.append(value)
+        value = dataset[i] - dataset[i - interval]
+        diff.append(value)
     return Series(diff)
+
  
 # transform series into train and test sets for supervised learning
 def prepare_data(series, n_test, n_lag, n_seq):
@@ -68,7 +70,8 @@ def prepare_data(series, n_test, n_lag, n_seq):
     # split into train and test sets
     train, test = supervised_values[0:-n_test], supervised_values[-n_test:]
     return scaler, train, test
- 
+
+
 # fit an LSTM network to training data
 def fit_lstm(train, n_lag, n_seq, n_batch, nb_epoch, n_neurons):
     # reshape training into [samples, timesteps, features]
@@ -86,7 +89,8 @@ def fit_lstm(train, n_lag, n_seq, n_batch, nb_epoch, n_neurons):
         model.fit(X, y, epochs=1, batch_size=n_batch, verbose=0, shuffle=False)
         model.reset_states()
     return model
- 
+
+
 # make one forecast with an LSTM,
 def forecast_lstm(model, X, n_batch):
     # reshape input pattern to [samples, timesteps, features]
@@ -95,18 +99,20 @@ def forecast_lstm(model, X, n_batch):
     forecast = model.predict(X, batch_size=n_batch)
     # convert to array
     return [x for x in forecast[0, :]]
- 
+
+
 # evaluate the persistence model
 def make_forecasts(model, n_batch, train, test, n_lag, n_seq):
     forecasts = list()
     for i in range(len(test)):
-	X, y = test[i, 0:n_lag], test[i, n_lag:]
-	# make forecast
-	forecast = forecast_lstm(model, X, n_batch)
-	# store the forecast
-	forecasts.append(forecast)
+        X, y = test[i, 0:n_lag], test[i, n_lag:]
+    # make forecast
+    forecast = forecast_lstm(model, X, n_batch)
+    # store the forecast
+    forecasts.append(forecast)
     return forecasts
- 
+
+
 # invert differenced forecast
 def inverse_difference(last_ob, forecast):
     # invert first forecast
@@ -114,48 +120,51 @@ def inverse_difference(last_ob, forecast):
     inverted.append(forecast[0] + last_ob)
     # propagate difference forecast using inverted first value
     for i in range(1, len(forecast)):
-	inverted.append(forecast[i] + inverted[i-1])
+        inverted.append(forecast[i] + inverted[i-1])
     return inverted
  
 # inverse data transform on forecasts
 def inverse_transform(series, forecasts, scaler, n_test):
     inverted = list()
     for i in range(len(forecasts)):
-	# create array from forecast
-	forecast = array(forecasts[i])
-	forecast = forecast.reshape(1, len(forecast))
-	# invert scaling
-	inv_scale = scaler.inverse_transform(forecast)
-	inv_scale = inv_scale[0, :]
-	# invert differencing
-	index = len(series) - n_test + i - 1
-	last_ob = series.values[index]
-	inv_diff = inverse_difference(last_ob, inv_scale)
-	# store
-	inverted.append(inv_diff)
+        # create array from forecast
+        forecast = array(forecasts[i])
+        forecast = forecast.reshape(1, len(forecast))
+        # invert scaling
+        inv_scale = scaler.inverse_transform(forecast)
+        inv_scale = inv_scale[0, :]
+        # invert differencing
+        index = len(series) - n_test + i - 1
+        last_ob = series.values[index]
+        inv_diff = inverse_difference(last_ob, inv_scale)
+        # store
+        inverted.append(inv_diff)
     return inverted
- 
+
+
 # evaluate the RMSE for each forecast time step
 def evaluate_forecasts(test, forecasts, n_lag, n_seq):
     for i in range(n_seq):
-	actual = [row[i] for row in test]
-	predicted = [forecast[i] for forecast in forecasts]
-	rmse = sqrt(mean_squared_error(actual, predicted))
-	print('t+%d RMSE: %f' % ((i+1), rmse))
- 
+        actual = [row[i] for row in test]
+        predicted = [forecast[i] for forecast in forecasts]
+        rmse = sqrt(mean_squared_error(actual, predicted))
+        print('t+%d RMSE: %f' % ((i+1), rmse))
+
+
 # plot the forecasts in the context of the original dataset
 def plot_forecasts(series, forecasts, n_test):
     # plot the entire dataset in blue
     pyplot.plot(series.values)
     # plot the forecasts in red
     for i in range(len(forecasts)):
-	off_s = len(series) - n_test + i - 1
-	off_e = off_s + len(forecasts[i]) + 1
-	xaxis = [x for x in range(off_s, off_e)]
-	yaxis = [series.values[off_s]] + forecasts[i]
-	pyplot.plot(xaxis, yaxis, color='red')
+        off_s = len(series) - n_test + i - 1
+        off_e = off_s + len(forecasts[i]) + 1
+        xaxis = [x for x in range(off_s, off_e)]
+        yaxis = [series.values[off_s]] + forecasts[i]
+        pyplot.plot(xaxis, yaxis, color='red')
     # show the plot
     pyplot.show()
+
 
 #save trained model
 def save_model_to_file(model, filename_wo_extension = 'model'):
@@ -168,26 +177,28 @@ def save_model_to_file(model, filename_wo_extension = 'model'):
     print('Saved model to disk')
 
 #load trained model
-def load_model_from_file(file_name_wo_extension = 'model')
-    json_file = open(file_name_wo_extension + '.json', 'r')
-    loaded_model_json = json_file.read()
-    json_file.close()
-    loaded_model = model_from_json(loaded_model_json)
-    # load weights into new model
-    loaded_model.load_weights(file_name_wo_extension + '.h5')
-    print('Loaded model from disk')
-    return loaded_model
+# def load_model_from_file(file_name_wo_extension = 'model'):
+#     json_file = open(file_name_wo_extension + '.json', 'r')
+#     loaded_model_json = json_file.read()
+#     json_file.close()
+#     loaded_model = model_from_json(loaded_model_json)
+#     # load weights into new model
+#     loaded_model.load_weights(file_name_wo_extension + '.h5')
+#     print('Loaded model from disk')
+#     return loaded_model
+
 
 # load dataset
 #series = read_csv('sales-of-shampoo-over-a-three-ye.csv', header=0, parse_dates=[0], index_col=0, squeeze=True, date_parser=parser)
 series = read_csv('2018_04_26_Zaqatala_Shuvalan.csv', header=0, index_col=0)
 series = series[['odd_1']]
 
+
 # configure
 n_lag = 1
 n_seq = 3
 n_test = 10
-n_epochs = 300
+n_epochs = 20
 n_batch = 1
 n_neurons = 1
 # prepare data

@@ -4,3 +4,4 @@ run.bat
 .idea/
 logs/
 todo.txt
+prediction/models/

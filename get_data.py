@@ -6,6 +6,7 @@ import time
 import json
 import os.path as path
 import pandas as pd
+import re
 
 # time to check for updates in seconds
 refresh_period = 30
@@ -25,6 +26,7 @@ class logger():
         self.file.flush()
 
     def append(self, message):
+        print('logger: ', message)
         self.file.write(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + ': ' + message + '\n')
         self.file.flush()
 
@@ -44,7 +46,7 @@ def write_to_csv(match, log_path):
     output = pd.DataFrame(match['history'])
     output = output.T
     output.to_csv(log_path
-                  + strftime("%Y_%m_%d", gmtime())
+                  + match['start_time']
                   + '_' + match['home']
                   + '_' + match['away'] + '.csv', index_label='min')
 
@@ -87,17 +89,18 @@ while True:
 
 
     if browser.current_url != url:
+        log.append('Site redirected to different URL. Checking football mathces...')
         #proveri da li postoji neki fudbal pa ako da refreshuj i vrati na pocetni url
         if 'Fudbal' in [i.text for i in soup.find_all('h2')]:
+            log.append('There are football matches. Heading to specified URL.')
             browser.get(url)
-            continue
+            time.sleep(7)
         else:
-            time.sleep(60)
             log.append('Currently there are no matches. Passing 30s...')
-            continue
+            time.sleep(60)
     else:
         # get current games
-        live_matches = soup.find_all('div', {'class': 'match live'})
+        live_matches = soup.find_all('div', class_ =re.compile('match live'))
         live_matches_ids = [x.find(class_='code').string for x in live_matches]
         print(str(len(live_matches_ids)) + ' matches currently.')
 
@@ -141,7 +144,7 @@ while True:
                 game_time = None
             if game_time:
                 code = i.find_all(class_='code')[0].string.strip()
-                league = i.find_all(class_='league')[0].string.strip()
+                league = i.find_all(class_='league')[0].string#.strip()
 
                 home = i.find_all(class_='home')[0].string.strip()
                 away = i.find_all(class_='away')[0].string.strip()
@@ -162,12 +165,11 @@ while True:
                         if game_type_div.string:
                             game_type = game_type_div.string.strip()
                             new_dict = {}
-                            for desc in game.descendants:
+                            for desc in game.find_all('div', class_='selection-name'):
                                 try:
-                                    if desc.get('class')[0] == 'selection-name':
-                                        odd_name = desc.string
-                                        odd = desc.next_sibling.next_sibling.string.strip()
-                                        new_dict[odd_name] = odd
+                                    odd_name = desc.text
+                                    odd = desc.next_sibling.text.strip()
+                                    new_dict[odd_name] = odd
                                 except:
                                     pass
                             odds_dict[game_type] = new_dict
@@ -180,7 +182,8 @@ while True:
                 data.update(translated_odds)
 
                 if code not in games_pool.keys():
-                    game_data = {'code': code,
+                    game_data = {'start_time': strftime("%Y_%m_%d_%H_%M", gmtime()),
+                                'code': code,
                                  'league': league,
                                  'home': home,
                                  'away': away,
