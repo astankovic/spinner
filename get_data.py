@@ -5,8 +5,9 @@ from time import gmtime, strftime
 import time
 import json
 import os.path as path
-import pandas as pd
 import re
+import pandas as pd
+from webserver import WebApp
 
 # time to check for updates in seconds
 refresh_period = 30
@@ -82,6 +83,9 @@ for i in range(10, 1, -1):
 
 already_started = []
 games_pool = {}
+
+# start web server
+webServer = WebApp(games_pool)
 
 while True:
     html = browser.page_source
