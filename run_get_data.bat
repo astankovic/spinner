@@ -1,2 +1,2 @@
-python get_data.py
+python app.py
 pause

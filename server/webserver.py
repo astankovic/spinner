@@ -3,11 +3,14 @@ import json
 
 
 class WebApp:
-    def __init__(self, gamesPool):
-        pool = gamesPool
-        app = Flask(__name__)
 
-        @app.route('/search', methods=['GET'])
+    app = None
+
+    def __init__(self, games_pool):
+        pool = games_pool
+        self.app = Flask(__name__)
+
+        @self.app.route('/search', methods=['GET'])
         def search():
             return 'Hello world'
             # data = request.args.get("name")
