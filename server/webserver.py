@@ -13,7 +13,7 @@ class WebApp:
 
         @self.app.route('/get_all', methods=['GET'])
         def search():
-            return games_pool.pool[0]
+            return games_pool.values()[0]
             # data = request.args.get("name")
             # output = select_all_items(c, data)
             # return json.dumps(output)
