@@ -11,9 +11,9 @@ class WebApp:
         self.app = Flask(__name__)
         CORS(self.app)
 
-        @self.app.route('/search', methods=['GET'])
+        @self.app.route('/get_all', methods=['GET'])
         def search():
-            return 'Hello world'
+            return games_pool.pool[0]
             # data = request.args.get("name")
             # output = select_all_items(c, data)
             # return json.dumps(output)
