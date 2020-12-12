@@ -105,8 +105,8 @@ class GamesPool:
                     time.sleep(60)
             else:
                 # get current games
-                live_matches = soup.find_all('div', class_ =re.compile('match live'))
-                live_matches_ids = [x.find(class_='code').string for x in live_matches]
+                live_matches = soup.find_all('div', class_ =re.compile('live-match'))
+                live_matches_ids = [x.find(class_='id').string for x in live_matches]
                 print(str(len(live_matches_ids)) + ' matches currently.')
 
                 # check to dump the finished games
@@ -143,12 +143,12 @@ class GamesPool:
                 # get the matches data
                 for i in live_matches:
                     try:
-                        game_time = i.find_all(class_='time')[0].string.strip()
+                        game_time = i.find_all(class_='period')[0].string.strip()
                         game_time = int(str.replace(game_time, "'", ""))
                     except:
                         game_time = None
                     if game_time:
-                        code = i.find_all(class_='code')[0].string.strip()
+                        code = i.find_all(class_='id')[0].string.strip()
                         league = i.find_all(class_='league')[0].string#.strip()
 
                         home = i.find_all(class_='home')[0].string.strip()
