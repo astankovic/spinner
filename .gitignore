@@ -6,3 +6,9 @@ run.bat
 logs/
 todo.txt
 prediction/models/
+engine
+.ipynb_checkpoints
+server
+sample.html
+__pycache__
+Untitled1.ipynb

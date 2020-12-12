@@ -1,0 +1,19 @@
+{
+  "pool":"Meridian",
+  "url":"https://meridianbet.rs/sr/kladjenje/uzivo/fudbal",
+  "match" : "div.live-match",
+  "data" : {	  
+	  "id":"div.id",
+	  "home":"div.rivals div.home",
+	  "away":"div.rivals div.home",
+	  "league":"div.league > a",
+	  "history": 
+	  {		"min":"div.period",
+			"result_home":"div.result div.home",
+			"result_away" : "div.result div.away",
+			"odd_1" : "div.games > div.game:nth-child(1) > div:first-child > live-match-game:nth-child(1) div",
+			"odd_x" : "div.games > div.game:nth-child(1) > div:first-child > live-match-game:nth-child(2) div",
+			"odd_2" : "div.games > div.game:nth-child(1) > div:first-child > live-match-game:nth-child(3) div"
+		}
+	}
+}
