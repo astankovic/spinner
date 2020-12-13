@@ -76,7 +76,7 @@ class GamesPool:
         #mapping = config['odds']
 
         url = config['url']
-        browser = webdriver.Chrome('C:/chromeDr/chromedriver')
+        browser = webdriver.Chrome('/chromeDr/chromedriver')
         browser.get(url)
 
         # wait for js to load
